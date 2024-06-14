@@ -70,7 +70,7 @@ impl MmioSerialPort {
         }
     }
 
-    fn line_sts(&mut self) -> LineStsFlags {
+    fn line_sts(&self) -> LineStsFlags {
         unsafe { LineStsFlags::from_bits_truncate(*self.line_sts.load(Ordering::Relaxed)) }
     }
 
@@ -102,6 +102,16 @@ impl MmioSerialPort {
             wait_for!(self.line_sts().contains(LineStsFlags::INPUT_FULL));
             self_data.read()
         }
+    }
+
+    /// Return `true` if there is data to read.
+    pub fn poll_in(&self) -> bool {
+        self.line_sts().contains(LineStsFlags::INPUT_FULL)
+    }
+
+    /// Return `true` if it can be written with data.
+    pub fn poll_out(&self) -> bool {
+        self.line_sts().contains(LineStsFlags::OUTPUT_EMPTY)
     }
 }
 
